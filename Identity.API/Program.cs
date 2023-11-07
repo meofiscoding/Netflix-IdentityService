@@ -114,7 +114,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
     app.Use(async (ctx, next) =>
     {
-        ctx.SetIdentityServerOrigin("https://frontend.20.211.61.204.nip.io");
+        ctx.SetIdentityServerOrigin(configuration["IdentityUrl"]);
         await next();
     });
 }
