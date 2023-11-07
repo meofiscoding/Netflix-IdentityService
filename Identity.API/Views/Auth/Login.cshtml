@@ -1,0 +1,101 @@
+@model LoginViewModel
+
+@{
+    ViewData["Title"] = "Signin";
+}
+
+<link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+
+<div class="login-top">
+    <img src="~/images/logo.png" alt="" />
+</div>
+
+<div class="d-flex justify-content-center align-items-center"
+     style="width: 100vw">
+    <section class="login-box">
+        <h2 class="text-white">Sign In</h2>
+        @if (Model.EnableLocalLogin)
+        {
+            <form class="mt-4" asp-controller="Auth" asp-action="Login" method="post">
+                @if (ViewBag.ErrorMessage != null)
+                {
+                    <div class="alert alert-danger">
+                        <i class="fa-solid fa-circle-exclamation" style="color: #c3223b;"></i>
+                        @ViewBag.ErrorMessage
+                    </div>
+                }
+                <input type="hidden" asp-for="ReturnUrl" />
+                <div class="form-floating mb-3">
+                    <input type="email"
+                           class="form-control"
+                           id="floatingInput"
+                           placeholder="name@example.com"
+                           asp-for="Email" />
+                    <label for="floatingInput">Email</label>
+                </div>
+
+                <div class="form-floating">
+                    <input type="password"
+                           class="form-control"
+                           id="floatingPassword"
+                           placeholder="Password" 
+                           asp-for="Password"/>
+                    <label for="floatingPassword">Password</label>
+                </div>
+
+                <div class="mt-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="exampleCheck1" />
+                    <label class="form-check-label text-white small-text"
+                           for="exampleCheck1">Remember Me</label>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-danger btn-lg col-12 mb-3 mt-3 "
+                        style="width: 100%">
+                    Sign In
+                </button>
+
+                @*
+                    <div class="mt-3 d-flex">
+                      <img width="20px" src="~/images/fb.png" alt="" />
+                      <p class="m-0 small-text text-white mx-2">Login with Facebook</p>
+                    </div>
+                *@ @if (Model.VisibleExternalProviders.Any())
+                {
+                    <!-- Divider -->
+                    <div class="divider text-white">OR</div>
+
+                    @foreach (var provider in Model.VisibleExternalProviders)
+                    {
+                        <a class="btn mt-3 py-2 text-white col-12 btn-outline-@(provider.DisplayName.ToString().Equals("Google") ? "danger":"info")"
+                           asp-controller="External"
+                           asp-action="Challenge"
+                           asp-route-scheme="@provider.AuthenticationScheme"
+                           asp-route-returnUrl="@Model.ReturnUrl">
+                            <img width="20px" src="~/images/@(provider.DisplayName.ToString().ToLower()).png" alt="" />
+                            Continue with @provider.DisplayName
+                        </a>
+                    }
+                }
+
+                <div class="mt-3">
+                    <!-- <img width="20px" src="./images/fb.png" alt=""> -->
+                    <p class="m-0 text-white">
+                        <span style="color: rgba(212, 212, 212, 0.75)">New to Netflix?</span>
+                        <a asp-controller="Auth"
+                           asp-action="Register"
+                           asp-route-returnUrl="@Model.ReturnUrl">
+                            Sign up now
+                        </a>
+                    </p>
+                    <p class="m-0 small-text text-white mt-2">
+                        <span style="color: rgba(212, 212, 212, 0.75)">
+                            This page is protected by Google reCAPTCHA to ensure you're not a
+                            bot. <a href="#"> Learn more.</a>
+                        </span>
+                    </p>
+                </div>
+            </form>
+        }
+    </section>
+</div>

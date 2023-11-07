@@ -1,0 +1,31 @@
+.navbar-brand {
+    height: 70px;
+    background-color: rgba(0, 0, 0, 0);
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand img {
+    width: 150px;
+}
+
+
+.authLinks {
+    color: #333;
+    float: right;
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 90px;
+}
+
+.stepIndicator {
+    font-size: 13px;
+    text-align: inherit;
+}
+.stepTitle {
+    font-weight: 500;
+}
+
+.subtitle {
+    font-size: 18px;
+}
