@@ -92,7 +92,8 @@ builder.Services.ConfigureApplicationCookie(config =>
 {
     config.Cookie.Name = "IdentityServer.Cookie";
     config.Cookie.SameSite = SameSiteMode.None;
-    config.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    config.Cookie.IsEssential = true;
+    //config.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     config.LoginPath = "/Auth/Login";
     config.LogoutPath = "/Auth/Logout";
 });
@@ -127,11 +128,7 @@ app.UseCors(builder =>
 });
 
 // This cookie policy fixes login issues with Chrome 80+ using HHTP
-app.UseCookiePolicy(new CookiePolicyOptions
-{
-    CheckConsentNeeded = _ => true,
-    MinimumSameSitePolicy = SameSiteMode.Lax,
-});
+app.UseCookiePolicy();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
