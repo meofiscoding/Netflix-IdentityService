@@ -5,10 +5,13 @@
     align-items: center;
 }
 
-.navbar-brand img {
-    width: 150px;
-}
+    .navbar-brand img {
+        width: 150px;
+    }
 
+.container {
+    animation: form ease-in-out 0.6s;
+}
 
 .authLinks {
     color: #333;
@@ -22,10 +25,23 @@
     font-size: 13px;
     text-align: inherit;
 }
+
 .stepTitle {
     font-weight: 500;
 }
 
 .subtitle {
     font-size: 18px;
+}
+
+@keyframes form {
+    from {
+        transform: translateX(2rem);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
