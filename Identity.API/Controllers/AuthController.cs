@@ -215,7 +215,7 @@ public class AuthController : Controller
         };
 
         var result = await _userManager.CreateAsync(user, vm.Password);
-        await _userManager.AddToRoleAsync(user, UserRoles.User);
+        //await _userManager.AddToRoleAsync(user, UserRoles.User);
 
         if (!result.Succeeded)
         {
