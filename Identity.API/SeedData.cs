@@ -20,6 +20,21 @@ namespace Identity.API
                 {
                     context.Database.Migrate();
 
+                    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                    // create roles
+                    var roles = new[] { UserRoles.User, UserRoles.Member };
+                    for (int i = 0; i < roles.Length; i++)
+                    {
+                        if (!await roleMgr.RoleExistsAsync(roles[i]))
+                        {
+                            var result = await roleMgr.CreateAsync(new IdentityRole(roles[i]));
+                            if (!result.Succeeded)
+                            {
+                                throw new Exception(result.Errors.First().Description);
+                            }
+                        }
+                    }
+
                     var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
                     var testUser = await userMgr.FindByNameAsync("test");
