@@ -1,7 +1,7 @@
 ﻿using System;
 namespace Identity.API.Entity
 {
-	public class UserRoles
+	public static class UserRoles
 	{
 		public const string User = "User";
 
