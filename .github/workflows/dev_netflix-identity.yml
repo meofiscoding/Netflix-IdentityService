@@ -1,12 +1,12 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - identitynetflix
+name: Build and deploy ASP.Net Core app to Azure Web App - netflix-identity
 
 on:
   push:
     branches:
-      - main
+      - dev
   workflow_dispatch:
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
 
       - name: Build with dotnet
         run: dotnet build --configuration Release Identity.API/Identity.API.csproj
-
+  
       - name: dotnet publish
         run: dotnet publish -c Release Identity.API/Identity.API.csproj -o ${{env.DOTNET_ROOT}}/myapp
 
@@ -40,18 +40,18 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
+    
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
         with:
           name: .net-app
-
+      
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'identitynetflix'
+          app-name: 'netflix-identity'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6D94A4B86A7E4B3DA3F35B22849ED613 }}
           package: .
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_41BCE12A82BE4FCBA5C170A585A1E5BC }}
