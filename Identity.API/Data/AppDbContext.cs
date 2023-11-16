@@ -14,6 +14,11 @@ namespace Identity.API.Data
             Configuration = configuration;
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder?.UseNpgsql(Configuration.GetConnectionString("IdentityDB")??Configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"));
+        }
+
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
     }
 }
