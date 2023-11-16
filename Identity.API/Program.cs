@@ -31,7 +31,7 @@ builder.Services.AddControllersWithViews();
 
 // Configure DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")));
+    options.UseNpgsql(configuration.GetConnectionString("IdentityDB")));
 
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<AppDbContext>();
@@ -92,12 +92,12 @@ builder.Services.AddIdentityServer(option =>
 //.AddInMemoryApiScopes(Config.ApiScopes)
 .AddOperationalStore(options =>
 {
-    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
+    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB"),
         sql => sql.MigrationsAssembly(migrationsAssembly));
 })
 .AddConfigurationStore(options =>
 {
-    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
+    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB"),
         sql => sql.MigrationsAssembly(migrationsAssembly));
 })
 .AddAspNetIdentity<ApplicationUser>()
