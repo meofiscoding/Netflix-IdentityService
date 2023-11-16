@@ -11,6 +11,7 @@ using Duende.IdentityServer.EntityFramework.Mappers;
 using Identity.API.Service;
 using Identity.API;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(options =>
@@ -168,6 +169,10 @@ static void InitializeDatabase(IApplicationBuilder app)
     if (serviceScope == null)
     {
         throw new System.Exception("Could not create service scope");
+    }
+
+    if(serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>() == null){
+        throw new System.Exception("Could not create PersistedGrantDbContext");
     }
 
     serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
