@@ -31,12 +31,6 @@ builder.Services.AddControllersWithViews();
 // Configure DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")));
-builder.Services.AddDbContext<PersistedGrantDbContext>(options =>
-    options.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")));
-
-builder.Services.AddDbContext<ConfigurationDbContext>(options =>
-    options.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")));
-
 
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<AppDbContext>();
@@ -97,12 +91,12 @@ builder.Services.AddIdentityServer(option =>
 //.AddInMemoryApiScopes(Config.ApiScopes)
 .AddOperationalStore(options =>
 {
-    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
+    options.ConfigureDbContext = builder => builder.UseNpgsql("Host=netflix-identity-server.postgres.database.azure.com;Database=netflix-identity-database;Port=5432;Ssl Mode=Require;User Id=vtqbcezpnv;Password=842M5168LWK5ZMK5$;",
         sql => sql.MigrationsAssembly(migrationsAssembly));
 })
 .AddConfigurationStore(options =>
 {
-    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
+    options.ConfigureDbContext = builder => builder.UseNpgsql("Host=netflix-identity-server.postgres.database.azure.com;Database=netflix-identity-database;Port=5432;Ssl Mode=Require;User Id=vtqbcezpnv;Password=842M5168LWK5ZMK5$;",
         sql => sql.MigrationsAssembly(migrationsAssembly));
 })
 .AddAspNetIdentity<ApplicationUser>()
@@ -174,10 +168,6 @@ static void InitializeDatabase(IApplicationBuilder app)
     if (serviceScope == null)
     {
         throw new System.Exception("Could not create service scope");
-    }
-
-    if (serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>() == null){
-        throw new System.Exception("Could not get service of PersistedGrantDbContext");
     }
 
     serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
