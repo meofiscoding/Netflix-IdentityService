@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option csharp_namespace ="Identity.API.GrpcService.Protos";
+
+service PaymentProtoService {
+    // get user's payment status to update user's role
+    rpc UpdateUserMembership (PaymentRequest) returns (PaymentResponse);
+}
+
+// Input: 
+// User's id (field number 1)
+// Payment status (field number 2)
+message PaymentRequest {
+    string userId = 1;
+    bool success = 2;
+}
+
+// Response:
+// Payment status (field number 1)
+message PaymentResponse {
+    bool success = 1;
+    string Message = 2;
+}
+
