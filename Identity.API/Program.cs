@@ -31,6 +31,12 @@ builder.Services.AddControllersWithViews();
 // Configure DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")));
+builder.Services.AddDbContext<PersistedGrantDbContext>(options =>
+    options.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")));
+
+builder.Services.AddDbContext<ConfigurationDbContext>(options =>
+    options.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")));
+
 
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<AppDbContext>();
