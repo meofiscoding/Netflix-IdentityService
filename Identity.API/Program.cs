@@ -164,44 +164,45 @@ InitializeDatabase(app);
 static void InitializeDatabase(IApplicationBuilder app)
 {
     var serviceScope = app.ApplicationServices?.GetService<IServiceScopeFactory>()?.CreateScope();
-    
-    if(serviceScope == null)
+
+    if (serviceScope == null)
     {
         throw new System.Exception("Could not create service scope");
     }
 
     serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-
-    var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-    context.Database.Migrate();
-    if (!context.Clients.Any())
+    try
     {
-        foreach (var client in Config.Clients)
+        var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+        context.Database.Migrate();
+        if (!context.Clients.Any())
         {
-            context.Clients.Add(client.ToEntity());
+            foreach (var client in Config.Clients)
+            {
+                context.Clients.Add(client.ToEntity());
+            }
+            context.SaveChanges();
         }
-        context.SaveChanges();
-    }
 
-    if (!context.IdentityResources.Any())
-    {
-        foreach (var resource in Config.IdentityResources)
+        if (!context.IdentityResources.Any())
         {
-            context.IdentityResources.Add(resource.ToEntity());
+            foreach (var resource in Config.IdentityResources)
+            {
+                context.IdentityResources.Add(resource.ToEntity());
+            }
+            context.SaveChanges();
         }
-        context.SaveChanges();
-    }
 
-    if (!context.ApiScopes.Any())
-    {
-        foreach (var resource in Config.ApiScopes)
+        if (!context.ApiScopes.Any())
         {
-            context.ApiScopes.Add(resource.ToEntity());
+            foreach (var resource in Config.ApiScopes)
+            {
+                context.ApiScopes.Add(resource.ToEntity());
+            }
+            context.SaveChanges();
+
         }
-      context.SaveChanges();
-       
-    }
-   if (!context.ApiResources.Any())
+        if (!context.ApiResources.Any())
         {
             foreach (var resource in Config.ApiResources)
             {
@@ -209,6 +210,12 @@ static void InitializeDatabase(IApplicationBuilder app)
             }
             context.SaveChanges();
         }
+    }
+    catch (System.Exception ex)
+    {
+        throw new System.Exception($"Exception during seeding PersistedGrantDbContext: {ex.Message}");
+    }
+
 }
 
 
