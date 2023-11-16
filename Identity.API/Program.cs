@@ -160,80 +160,13 @@ app.UseIdentityServer();
 
 app.MapDefaultControllerRoute();
 
-InitializeDatabase(app);
-
-static void InitializeDatabase(IApplicationBuilder app)
-{
-    var serviceScope = app.ApplicationServices?.GetService<IServiceScopeFactory>()?.CreateScope();
-
-    if (serviceScope == null)
-    {
-        throw new System.Exception("Could not create service scope");
-    }
-
-    if(serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>() == null){
-        throw new System.Exception("Could not create PersistedGrantDbContext");
-    }
-
-    if(serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database == null){
-        throw new System.Exception("Database of PersistedGrantDbContext not found");
-    }
-
-    serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-    try
-    {
-        var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-        context.Database.Migrate();
-        if (!context.Clients.Any())
-        {
-            foreach (var client in Config.Clients)
-            {
-                context.Clients.Add(client.ToEntity());
-            }
-            context.SaveChanges();
-        }
-
-        if (!context.IdentityResources.Any())
-        {
-            foreach (var resource in Config.IdentityResources)
-            {
-                context.IdentityResources.Add(resource.ToEntity());
-            }
-            context.SaveChanges();
-        }
-
-        if (!context.ApiScopes.Any())
-        {
-            foreach (var resource in Config.ApiScopes)
-            {
-                context.ApiScopes.Add(resource.ToEntity());
-            }
-            context.SaveChanges();
-
-        }
-        if (!context.ApiResources.Any())
-        {
-            foreach (var resource in Config.ApiResources)
-            {
-                context.ApiResources.Add(resource.ToEntity());
-            }
-            context.SaveChanges();
-        }
-    }
-    catch (System.Exception ex)
-    {
-        throw new System.Exception($"Exception during seeding PersistedGrantDbContext: {ex.Message}");
-    }
-
-}
-
-
 // Apply database migration automatically. Note that this approach is not
 // recommended for production scenarios. Consider generating SQL scripts from
 // migrations instead.
 using (var scope = app.Services.CreateScope())
 {
     await SeedData.EnsureSeedData(scope, app.Configuration, app.Logger);
+    await SeedData.InitializeDatabaseAsync(scope, app.Configuration, app.Logger);
 }
 
 // X509Certificate2 GetIdentityServerCertificate()
