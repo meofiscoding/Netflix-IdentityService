@@ -11,6 +11,8 @@ using Identity.API.Utils;
 using Microsoft.AspNetCore.Authentication;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Identity.API.Controllers;
 
@@ -124,38 +126,41 @@ public class AuthController : Controller
         if (ModelState.IsValid)
         {
             var user = await _userManager.FindByEmailAsync(vm.Email);
-            // check if the user exists
-            if (user != null)
+            if (user == null)
             {
-                // check if the password is correct
-                var signInResult = _signInManager.PasswordSignInAsync(user, vm.Password, false, false).Result;
-                // check if email is verify or not
-                if (!user.EmailConfirmed)
+                ModelState.AddModelError("Email", "Email is not valid");
+                _logger.LogWarning($"Email {vm.Email} is not registered");
+                return View(vm);
+            }
+            if (!await _userManager.CheckPasswordAsync(user, vm.Password))
+            {
+                ModelState.AddModelError("Password", "Password is not valid");
+                _logger.LogWarning($"Password is not valid for {vm.Email}");
+                return View(vm);
+            }
+
+            var useRoles = await _userManager.GetRolesAsync(user);
+            var authClaim = new List<Claim>(){
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            };
+
+            var signInResult = _signInManager.PasswordSignInAsync(user, vm.Password, false, false).Result;
+            if (signInResult.Succeeded)
+            {
+                // redirect to the return url
+                if (vm.ReturnUrl != null)
                 {
-                    ModelState.AddModelError("Email", "Email is not confirmed");
-                    _logger.LogWarning($"Email {user.Email} is not confirmed");
-                    return View(vm);
+                    _logger.LogWarning($"Route to {vm.ReturnUrl}");
+                    return Redirect(vm.ReturnUrl);
                 }
-                if (signInResult.Succeeded)
+                else
                 {
-                    // redirect to the return url
-                    if (vm.ReturnUrl != null)
-                    {
-                        _logger.LogWarning($"Route to {vm.ReturnUrl}");
-                        return Redirect(vm.ReturnUrl);
-                    }
-                    else
-                    {
-                        _logger.LogWarning("ReturnUrl is null");
-                        return View();
-                    }
+                    _logger.LogWarning("ReturnUrl is null");
+                    return View();
                 }
             }
-            else
-            {
-                _logger.LogWarning($"Password is incorrect for {vm.Email}");
-                ModelState.AddModelError("Password", "Email or password is incorrect");
-            }
+
         }
         _logger.LogWarning("Model is invalid");
         return Redirect(vm.ReturnUrl);
@@ -176,25 +181,26 @@ public class AuthController : Controller
         return Redirect(logoutRequest.PostLogoutRedirectUri);
     }
 
-    [HttpGet]
-    public IActionResult Register(string returnUrl)
-    {
-        return View(new RegisterViewModel { ReturnUrl = returnUrl });
-    }
-
     [HttpPost]
-    public async Task<IActionResult> Register(RegisterViewModel vm)
+    public async Task<IActionResult> Register([FromBody] RegisterViewModel vm)
     {
         if (!ModelState.IsValid)
         {
-            return View(vm);
+            return BadRequest(new RegistrationResponseDto
+            {
+                IsSuccessfulRegistration = false,
+                Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage))
+            });
         }
 
         var userByEmail = await _userManager.FindByEmailAsync(vm.Email!);
         if (userByEmail is not null)
         {
-            ModelState.AddModelError("Email", "Email already exists!!");
-            return View(vm);
+            return BadRequest(new RegistrationResponseDto
+            {
+                IsSuccessfulRegistration = false,
+                Errors = new[] { "Email already in use" }
+            });
         }
 
         string username = vm.Email.Split('@')[0];
@@ -204,24 +210,28 @@ public class AuthController : Controller
 
         var user = new ApplicationUser
         {
-            UserName = $"{username}{(count > 0 ? count.ToString() : "")}",
+            UserName = username + (count > 0 ? count.ToString() : ""),
             Email = vm.Email
         };
 
         var result = await _userManager.CreateAsync(user, vm.Password);
-        // await _userManager.AddToRoleAsync(user, "User");
+        //await _userManager.AddToRoleAsync(user, UserRoles.User);
 
         if (!result.Succeeded)
         {
-            _logger.LogError($"User creation failed. Errors: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-            ViewBag.ErrorMessage = "User creation failed due to server error. Please try again later.";
-            return View(vm);
+            return BadRequest(new RegistrationResponseDto
+            {
+                IsSuccessfulRegistration = false,
+                Errors = result.Errors.Select(e => e.Description)
+            });
         }
 
         await _signInManager.SignInAsync(user, false);
 
-        // TODO: need to redirect to login before redirect to authorize page
-        return Redirect(vm.ReturnUrl);
+        return StatusCode(201, new RegistrationResponseDto
+        {
+            IsSuccessfulRegistration = true
+        });
     }
 
 }

@@ -1,5 +1,4 @@
-﻿using Identity.API;
-using Identity.API.Configuration;
+﻿using Identity.API.Configuration;
 using Identity.API.Data;
 using Identity.API.Entity;
 using Microsoft.AspNetCore.Identity;
@@ -9,8 +8,21 @@ using Duende.IdentityServer;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Mappers;
+using Identity.API.Service;
+using Identity.API;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MinRequestBodyDataRate = null;
+
+    options.ListenAnyIP(5286,
+          listenOptions => { listenOptions.Protocols = HttpProtocols.Http1; });
+
+    options.ListenAnyIP(50050,
+       listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
+});
 var configuration = builder.Configuration;
 
 // Add services to the container.
@@ -31,6 +43,9 @@ builder.Services.AddAuthentication().AddGoogle("Google", options =>
     options.ClientId = configuration["Google:ClientId"];
     options.ClientSecret = configuration["Google:ClientSecret"];
 });
+
+// Add Grpc Service
+builder.Services.AddGrpc();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(config =>
     {
@@ -53,16 +68,16 @@ builder.Services.AddIdentityServer(option =>
         // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
         option.EmitStaticAudienceClaim = true;
         option.KeyManagement.KeyPath = "/home/shared/key";
-        // new key every 30 days
+        //// new key every 30 days
         option.KeyManagement.RotationInterval = TimeSpan.FromDays(30);
 
-        // announce new key 2 days in advance in discovery
+        //// announce new key 2 days in advance in discovery
         option.KeyManagement.PropagationTime = TimeSpan.FromDays(2);
 
-        // keep old key for 7 days in discovery for validation of tokens
+        //// keep old key for 7 days in discovery for validation of tokens
         option.KeyManagement.RetentionDuration = TimeSpan.FromDays(7);
 
-        // don't delete keys after their retention period is over
+        //// don't delete keys after their retention period is over
         option.KeyManagement.DeleteRetiredKeys = false;
         if (builder.Environment.IsDevelopment())
         {
@@ -84,7 +99,8 @@ builder.Services.AddIdentityServer(option =>
     options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
         sql => sql.MigrationsAssembly(migrationsAssembly));
 })
-.AddAspNetIdentity<ApplicationUser>();
+.AddAspNetIdentity<ApplicationUser>()
+.AddProfileService<CustomProfileService>();
 // .AddSigningCredential(GetIdentityServerCertificate());
 // .AddDeveloperSigningCredential(); // Not recommended for production - you need to store your key material somewhere secure
 
@@ -102,6 +118,8 @@ builder.Services.ConfigureApplicationCookie(config =>
 builder.Services.AddCors();
 
 var app = builder.Build();
+// Map Grpc Service
+app.MapGrpcService<UserService>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -180,8 +198,17 @@ static void InitializeDatabase(IApplicationBuilder app)
         {
             context.ApiScopes.Add(resource.ToEntity());
         }
-        context.SaveChanges();
+      context.SaveChanges();
+       
     }
+   if (!context.ApiResources.Any())
+        {
+            foreach (var resource in Config.ApiResources)
+            {
+                context.ApiResources.Add(resource.ToEntity());
+            }
+            context.SaveChanges();
+        }
 }
 
 

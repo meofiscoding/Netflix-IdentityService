@@ -20,6 +20,13 @@ namespace Identity.API
                 {
                     context.Database.Migrate();
 
+                    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                    // create roles member if not exists
+                    if (!await roleMgr.RoleExistsAsync(UserRoles.Member))
+                    {
+                        await roleMgr.CreateAsync(new IdentityRole(UserRoles.Member));
+                    }
+
                     var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
                     var testUser = await userMgr.FindByNameAsync("test");

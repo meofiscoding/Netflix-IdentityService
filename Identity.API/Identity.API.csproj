@@ -28,5 +28,10 @@
     <PackageReference Include="Duende.IdentityServer" Version="6.3.6" />
     <PackageReference Include="Duende.IdentityServer.EntityFramework" Version="6.3.6" />
     <PackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="6.3.6" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.59.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="GrpcService/Protos/payment.proto" GrpcServices="Server" />
+</ItemGroup>
 </Project>
