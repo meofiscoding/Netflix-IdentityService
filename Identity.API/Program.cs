@@ -18,7 +18,14 @@ builder.Services.AddControllersWithViews();
 
 // Configure DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(configuration.GetConnectionString("IdentityDB")??configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")));
+    options.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")));
+
+builder.Services.AddDbContext<PersistedGrantDbContext>(options =>
+    options.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")));
+
+builder.Services.AddDbContext<ConfigurationDbContext>(options =>
+    options.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")));
+
 
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<AppDbContext>();
@@ -76,12 +83,12 @@ builder.Services.AddIdentityServer(option =>
 //.AddInMemoryApiScopes(Config.ApiScopes)
 .AddOperationalStore(options =>
 {
-    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB")??configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
+    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
         sql => sql.MigrationsAssembly(migrationsAssembly));
 })
 .AddConfigurationStore(options =>
 {
-    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB")??configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
+    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
         sql => sql.MigrationsAssembly(migrationsAssembly));
 })
 .AddAspNetIdentity<ApplicationUser>();
