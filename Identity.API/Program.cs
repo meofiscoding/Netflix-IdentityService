@@ -99,6 +99,8 @@ builder.Services.AddIdentityServer(option =>
 {
     options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
         sql => sql.MigrationsAssembly(migrationsAssembly));
+    // log connection string
+    Console.WriteLine($"Connection string: {configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")}");
 })
 .AddConfigurationStore(options =>
 {
