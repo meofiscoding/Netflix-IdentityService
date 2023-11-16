@@ -175,6 +175,10 @@ static void InitializeDatabase(IApplicationBuilder app)
         throw new System.Exception("Could not create PersistedGrantDbContext");
     }
 
+    if(serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database == null){
+        throw new System.Exception("Database of PersistedGrantDbContext not found");
+    }
+
     serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
     try
     {
