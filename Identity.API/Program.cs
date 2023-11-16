@@ -97,14 +97,12 @@ builder.Services.AddIdentityServer(option =>
 //.AddInMemoryApiScopes(Config.ApiScopes)
 .AddOperationalStore(options =>
 {
-    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
+    options.ConfigureDbContext = builder => builder.UseNpgsql("Server=netflix-identity-server.postgres.database.azure.com;Database=netflix-identity-database;Port=5432;Ssl Mode=Require;User Id=vtqbcezpnv;Password=842M5168LWK5ZMK5$;",
         sql => sql.MigrationsAssembly(migrationsAssembly));
-    // log connection string
-    Console.WriteLine($"Connection string: {configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING")}");
 })
 .AddConfigurationStore(options =>
 {
-    options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB") ?? configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"),
+    options.ConfigureDbContext = builder => builder.UseNpgsql("Server=netflix-identity-server.postgres.database.azure.com;Database=netflix-identity-database;Port=5432;Ssl Mode=Require;User Id=vtqbcezpnv;Password=842M5168LWK5ZMK5$;",
         sql => sql.MigrationsAssembly(migrationsAssembly));
 })
 .AddAspNetIdentity<ApplicationUser>()
