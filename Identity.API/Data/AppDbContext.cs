@@ -8,8 +8,15 @@ namespace Identity.API.Data
 {
     public class AppDbContext : IdentityDbContext<ApplicationUser>, IDataProtectionKeyContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        protected readonly IConfiguration Configuration;
+        public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration configuration) : base(options)
         {
+            Configuration = configuration;
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder?.UseNpgsql(Configuration.GetConnectionString("IdentityDB")??Configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING"));
         }
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
