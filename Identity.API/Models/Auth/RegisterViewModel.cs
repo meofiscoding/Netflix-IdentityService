@@ -4,7 +4,7 @@ namespace Identity.API.Models.Auth;
 
 public class RegisterViewModel
 {
-    public string ReturnUrl { get; set; } = string.Empty;
+    // public string ReturnUrl { get; set; } = string.Empty;
     [Required(ErrorMessage = "Email is required")]
     public string Email { get; set; } = string.Empty;
     [Required(ErrorMessage = "Password is required")]

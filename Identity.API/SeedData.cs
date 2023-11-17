@@ -1,5 +1,8 @@
 using System;
 using System.Security.Claims;
+using Duende.IdentityServer.EntityFramework.DbContexts;
+using Duende.IdentityServer.EntityFramework.Mappers;
+using Identity.API.Configuration;
 using Identity.API.Data;
 using Identity.API.Entity;
 using IdentityModel;
@@ -19,6 +22,21 @@ namespace Identity.API
             await retryPolicy.ExecuteAsync(async () =>
                 {
                     context.Database.Migrate();
+
+                    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                    // for each const string in UserRoles, create a role if it doesn't exist
+                    foreach (var role in (List<string>)typeof(UserRoles).GetFields().Select(x => x.GetValue(null).ToString()).ToList())
+                    {
+                        var roleExist = await roleMgr.RoleExistsAsync(role);
+                        if (!roleExist)
+                        {
+                            var result = await roleMgr.CreateAsync(new IdentityRole(role));
+                            if (!result.Succeeded)
+                            {
+                                throw new Exception(result.Errors.First().Description);
+                            }
+                        }
+                    }
 
                     var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
@@ -57,6 +75,62 @@ namespace Identity.API
                     else
                     {
                         logger.LogDebug("test@local already exists");
+                    }
+
+                });
+        }
+
+        public static async Task InitializeDatabaseAsync(IServiceScope scope, IConfiguration configuration, ILogger logger)
+        {
+            var retryPolicy = CreateRetryPolicy(configuration, logger);
+            var context = scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
+
+            await retryPolicy.ExecuteAsync(async () =>
+                {
+                    context.Database.Migrate();
+                    try
+                    {
+                        var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+                        context.Database.Migrate();
+                        if (!context.Clients.Any())
+                        {
+                            foreach (var client in Config.Clients)
+                            {
+                                context.Clients.Add(client.ToEntity());
+                            }
+                            context.SaveChanges();
+                        }
+
+                        if (!context.IdentityResources.Any())
+                        {
+                            foreach (var resource in Config.IdentityResources)
+                            {
+                                context.IdentityResources.Add(resource.ToEntity());
+                            }
+                            context.SaveChanges();
+                        }
+
+                        if (!context.ApiScopes.Any())
+                        {
+                            foreach (var resource in Config.ApiScopes)
+                            {
+                                context.ApiScopes.Add(resource.ToEntity());
+                            }
+                            context.SaveChanges();
+
+                        }
+                        if (!context.ApiResources.Any())
+                        {
+                            foreach (var resource in Config.ApiResources)
+                            {
+                                context.ApiResources.Add(resource.ToEntity());
+                            }
+                            context.SaveChanges();
+                        }
+                    }
+                    catch (System.Exception ex)
+                    {
+                        throw new System.Exception($"Exception during seeding PersistedGrantDbContext: {ex.Message}");
                     }
 
                 });

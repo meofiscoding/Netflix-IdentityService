@@ -1,16 +1,15 @@
-﻿using Identity.API;
-using Identity.API.Configuration;
-using Identity.API.Data;
+﻿using Identity.API.Data;
 using Identity.API.Entity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Extensions;
-using Duende.IdentityServer.EntityFramework.DbContexts;
-using Duende.IdentityServer.EntityFramework.Mappers;
+using Identity.API.Service;
+using Identity.API;
 
 var builder = WebApplication.CreateBuilder(args);
+
 var configuration = builder.Configuration;
 
 // Add services to the container.
@@ -53,16 +52,16 @@ builder.Services.AddIdentityServer(option =>
         // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
         option.EmitStaticAudienceClaim = true;
         option.KeyManagement.KeyPath = "/home/shared/key";
-        // new key every 30 days
+        //// new key every 30 days
         option.KeyManagement.RotationInterval = TimeSpan.FromDays(30);
 
-        // announce new key 2 days in advance in discovery
+        //// announce new key 2 days in advance in discovery
         option.KeyManagement.PropagationTime = TimeSpan.FromDays(2);
 
-        // keep old key for 7 days in discovery for validation of tokens
+        //// keep old key for 7 days in discovery for validation of tokens
         option.KeyManagement.RetentionDuration = TimeSpan.FromDays(7);
 
-        // don't delete keys after their retention period is over
+        //// don't delete keys after their retention period is over
         option.KeyManagement.DeleteRetiredKeys = false;
         if (builder.Environment.IsDevelopment())
         {
@@ -84,7 +83,8 @@ builder.Services.AddIdentityServer(option =>
     options.ConfigureDbContext = builder => builder.UseNpgsql(configuration.GetConnectionString("IdentityDB"),
         sql => sql.MigrationsAssembly(migrationsAssembly));
 })
-.AddAspNetIdentity<ApplicationUser>();
+.AddAspNetIdentity<ApplicationUser>()
+.AddProfileService<CustomProfileService>();
 // .AddSigningCredential(GetIdentityServerCertificate());
 // .AddDeveloperSigningCredential(); // Not recommended for production - you need to store your key material somewhere secure
 
@@ -141,52 +141,13 @@ app.UseIdentityServer();
 
 app.MapDefaultControllerRoute();
 
-InitializeDatabase(app);
-
-static void InitializeDatabase(IApplicationBuilder app)
-{
-    using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-    {
-        serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-
-        var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-        context.Database.Migrate();
-        if (!context.Clients.Any())
-        {
-            foreach (var client in Config.Clients)
-            {
-                context.Clients.Add(client.ToEntity());
-            }
-            context.SaveChanges();
-        }
-
-        if (!context.IdentityResources.Any())
-        {
-            foreach (var resource in Config.IdentityResources)
-            {
-                context.IdentityResources.Add(resource.ToEntity());
-            }
-            context.SaveChanges();
-        }
-
-        if (!context.ApiScopes.Any())
-        {
-            foreach (var resource in Config.ApiScopes)
-            {
-                context.ApiScopes.Add(resource.ToEntity());
-            }
-            context.SaveChanges();
-        }
-    }
-}
-
-
 // Apply database migration automatically. Note that this approach is not
 // recommended for production scenarios. Consider generating SQL scripts from
 // migrations instead.
 using (var scope = app.Services.CreateScope())
 {
     await SeedData.EnsureSeedData(scope, app.Configuration, app.Logger);
+    await SeedData.InitializeDatabaseAsync(scope, app.Configuration, app.Logger);
 }
 
 // X509Certificate2 GetIdentityServerCertificate()
