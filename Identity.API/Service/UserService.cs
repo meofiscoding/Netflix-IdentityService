@@ -27,8 +27,27 @@ namespace Identity.API.Service
                 };
             }
 
-            var result = request.Success ? await _userManager.AddToRoleAsync(user, "PayingUser") : await _userManager.RemoveFromRoleAsync(user, "PayingUser");
-
+            var result = new IdentityResult();
+            if (request.Success)
+            {
+                // if user have role user, then add role user
+                var oldRole = await _userManager.GetRolesAsync(user);
+                if (oldRole.Contains(UserRoles.User))
+                {
+                    await _userManager.RemoveFromRoleAsync(user, UserRoles.User);
+                }
+                result = await _userManager.AddToRoleAsync(user, UserRoles.Member);
+            }
+            else
+            {
+                // if have role member, then remove role member 
+                var oldRole = await _userManager.GetRolesAsync(user);
+                if (oldRole.Contains(UserRoles.Member))
+                {
+                    await _userManager.RemoveFromRoleAsync(user, UserRoles.Member);
+                }
+                result = await _userManager.AddToRoleAsync(user, UserRoles.User);
+            }
             return new PaymentResponse
             {
                 Success = result.Succeeded,

@@ -24,10 +24,18 @@ namespace Identity.API
                     context.Database.Migrate();
 
                     var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                    // create roles member if not exists
-                    if (!await roleMgr.RoleExistsAsync(UserRoles.Member))
+                    // for each const string in UserRoles, create a role if it doesn't exist
+                    foreach (var role in (List<string>)typeof(UserRoles).GetFields().Select(x => x.GetValue(null).ToString()).ToList())
                     {
-                        await roleMgr.CreateAsync(new IdentityRole(UserRoles.Member));
+                        var roleExist = await roleMgr.RoleExistsAsync(role);
+                        if (!roleExist)
+                        {
+                            var result = await roleMgr.CreateAsync(new IdentityRole(role));
+                            if (!result.Succeeded)
+                            {
+                                throw new Exception(result.Errors.First().Description);
+                            }
+                        }
                     }
 
                     var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
