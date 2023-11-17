@@ -21,7 +21,7 @@ builder.WebHost.ConfigureKestrel(options =>
     options.ListenAnyIP(5286,
           listenOptions => { listenOptions.Protocols = HttpProtocols.Http1; });
 
-    options.ListenAnyIP(8585,
+    options.ListenAnyIP(50050,
        listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
 });
 var configuration = builder.Configuration;
