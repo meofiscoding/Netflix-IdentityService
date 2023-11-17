@@ -1,29 +1,15 @@
-﻿using Identity.API.Configuration;
-using Identity.API.Data;
+﻿using Identity.API.Data;
 using Identity.API.Entity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Extensions;
-using Duende.IdentityServer.EntityFramework.DbContexts;
-using Duende.IdentityServer.EntityFramework.Mappers;
 using Identity.API.Service;
 using Identity.API;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.Limits.MinRequestBodyDataRate = null;
 
-    options.ListenAnyIP(5286,
-          listenOptions => { listenOptions.Protocols = HttpProtocols.Http1; });
-
-    options.ListenAnyIP(50050,
-       listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
-});
 var configuration = builder.Configuration;
 
 // Add services to the container.
@@ -44,9 +30,6 @@ builder.Services.AddAuthentication().AddGoogle("Google", options =>
     options.ClientId = configuration["Google:ClientId"];
     options.ClientSecret = configuration["Google:ClientSecret"];
 });
-
-// Add Grpc Service
-builder.Services.AddGrpc();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(config =>
     {
@@ -119,8 +102,6 @@ builder.Services.ConfigureApplicationCookie(config =>
 builder.Services.AddCors();
 
 var app = builder.Build();
-// Map Grpc Service
-app.MapGrpcService<UserService>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
