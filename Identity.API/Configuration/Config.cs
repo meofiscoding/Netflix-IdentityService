@@ -41,12 +41,14 @@ namespace Identity.API.Configuration
                 RedirectUris = new List<string>{ "https://simplenetflix.vercel.app/signin-callback", "https://simplenetflix.vercel.app/assets/silent-callback.html" },
                 RequirePkce = true,
                 AllowAccessTokensViaBrowser = true,
-                AllowedScopes =
-                {
-                    IdentityServerConstants.StandardScopes.OpenId,
-                    IdentityServerConstants.StandardScopes.Profile,
-                    "movies"
-                },
+                 AllowedScopes =
+                 {
+                     IdentityServerConstants.StandardScopes.OpenId,
+                     IdentityServerConstants.StandardScopes.Profile,
+                     "movies",
+                     "payment",
+                     "roles"
+                 },
                 AllowedCorsOrigins = { "https://simplenetflix.vercel.app" },
                 RequireClientSecret = false,
                 PostLogoutRedirectUris = new List<string> { "https://simplenetflix.vercel.app/signout-callback" },
