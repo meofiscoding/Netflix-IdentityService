@@ -8,10 +8,8 @@ namespace Identity.API.Data
 {
     public class AppDbContext : IdentityDbContext<ApplicationUser>, IDataProtectionKeyContext
     {
-        protected readonly IConfiguration Configuration;
-        public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration configuration) : base(options)
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
-            Configuration = configuration;
         }
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
