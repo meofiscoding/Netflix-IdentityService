@@ -139,12 +139,6 @@ public class AuthController : Controller
                 return View(vm);
             }
 
-            var useRoles = await _userManager.GetRolesAsync(user);
-            var authClaim = new List<Claim>(){
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            };
-
             var signInResult = _signInManager.PasswordSignInAsync(user, vm.Password, false, false).Result;
             if (signInResult.Succeeded)
             {
