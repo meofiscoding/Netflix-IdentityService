@@ -197,14 +197,15 @@ public class AuthController : Controller
             });
         }
 
-        string username = vm.Email.Split('@')[0];
-        int count = await _userManager.Users
-            .Where(u => u.Email != null && u.Email.Contains(username))
-            .CountAsync();
+        //string username = vm.Email.Split('@')[0];
+        //int count = await _userManager.Users
+        //    .Where(u => u.Email != null && u.Email.Contains(username))
+        //    .CountAsync();
 
         var user = new ApplicationUser
         {
-            UserName = username + (count > 0 ? count.ToString() : ""),
+            // UserName = username + (count > 0 ? count.ToString() : ""),
+            UserName = vm.Email,
             Email = vm.Email
         };
 
