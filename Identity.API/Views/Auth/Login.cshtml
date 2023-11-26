@@ -38,8 +38,8 @@
                     <input type="password"
                            class="form-control"
                            id="floatingPassword"
-                           placeholder="Password" 
-                           asp-for="Password"/>
+                           placeholder="Password"
+                           asp-for="Password" />
                     <label for="floatingPassword">Password</label>
                 </div>
 
@@ -82,9 +82,7 @@
                     <!-- <img width="20px" src="./images/fb.png" alt=""> -->
                     <p class="m-0 text-white">
                         <span style="color: rgba(212, 212, 212, 0.75)">New to Netflix?</span>
-                        <a asp-controller="Auth"
-                           asp-action="Register"
-                           asp-route-returnUrl="@Model.ReturnUrl">
+                        <a href="https://simplenetflix.vercel.app/authentication/register">
                             Sign up now
                         </a>
                     </p>
