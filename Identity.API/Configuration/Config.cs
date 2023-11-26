@@ -47,7 +47,8 @@ namespace Identity.API.Configuration
                      IdentityServerConstants.StandardScopes.Profile,
                      "movies",
                      "payment",
-                     "roles"
+                     "roles",
+                     "watchlist"
                  },
                 AllowedCorsOrigins = { "https://simplenetflix.vercel.app" },
                 RequireClientSecret = false,
@@ -84,6 +85,7 @@ namespace Identity.API.Configuration
             {
                 new ApiScope("movies", "Movie Service"),
                 new ApiScope("payment", "Payment Service"),
+                new ApiScope("watchlist", "Watch List Service")
             };
 
         public static IEnumerable<ApiResource> ApiResources =>
@@ -94,6 +96,9 @@ namespace Identity.API.Configuration
                 },
                 new ApiResource("payment", "Payment Service"){
                     Scopes = { "payment" }
+                },
+                new ApiResource("watchlist", "Watch List Service"){
+                    Scopes = { "watchlist" }
                 },
             };
         public static IEnumerable<IdentityResource> IdentityResources =>
