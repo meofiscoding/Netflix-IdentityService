@@ -92,41 +92,33 @@ namespace Identity.API
                     {
                         var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
                         context.Database.Migrate();
-                        if (!context.Clients.Any())
+
+                        context.RemoveRange(context.Clients);
+                        context.RemoveRange(context.IdentityResources);
+                        context.RemoveRange(context.ApiScopes);
+                        context.RemoveRange(context.ApiResources);
+
+                        foreach (var client in Config.Clients)
                         {
-                            foreach (var client in Config.Clients)
-                            {
-                                context.Clients.Add(client.ToEntity());
-                            }
-                            context.SaveChanges();
+                            context.Clients.Add(client.ToEntity());
                         }
 
-                        if (!context.IdentityResources.Any())
+                        foreach (var resource in Config.IdentityResources)
                         {
-                            foreach (var resource in Config.IdentityResources)
-                            {
-                                context.IdentityResources.Add(resource.ToEntity());
-                            }
-                            context.SaveChanges();
+                            context.IdentityResources.Add(resource.ToEntity());
                         }
 
-                        if (!context.ApiScopes.Any())
+                        foreach (var resource in Config.ApiScopes)
                         {
-                            foreach (var resource in Config.ApiScopes)
-                            {
-                                context.ApiScopes.Add(resource.ToEntity());
-                            }
-                            context.SaveChanges();
+                            context.ApiScopes.Add(resource.ToEntity());
+                        }
 
-                        }
-                        if (!context.ApiResources.Any())
+                        foreach (var resource in Config.ApiResources)
                         {
-                            foreach (var resource in Config.ApiResources)
-                            {
-                                context.ApiResources.Add(resource.ToEntity());
-                            }
-                            context.SaveChanges();
+                            context.ApiResources.Add(resource.ToEntity());
                         }
+
+                        context.SaveChanges();
                     }
                     catch (System.Exception ex)
                     {
